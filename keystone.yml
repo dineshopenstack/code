@@ -1,0 +1,15 @@
+---
+- hosts: slave
+  tasks:
+    - name: connect mysql
+      mysql_db:
+        login_user: root
+        login_password: root
+
+    - name: create keystone database
+      mysql_db: name=keystone state=present
+    - name : localhost user 
+      mysql_user: name=keystone password=keystone priv=keystone.*:ALL state=present
+
+    - name:  remote user
+      mysql_user: host=% name=keystone password=keystone priv=keystone.*:ALL state=present
