@@ -1,0 +1,26 @@
+---
+- hosts: slave
+  tasks:
+    - name: database parameters
+      debconf: name='mariadb-server' question='mysql-server/{{item}}' value='root' vtype='password'
+      with_items:
+        - root-password
+        - root-password-again
+    - name: install packages
+      apt: name={{item}}  state=present
+      with_items: 
+        - mariadb-server
+        - python-mysqldb
+
+    - name:
+      template:
+        src: openstack.cnf.j2
+        dest: /etc/mysql/conf.d/openstack.cnf
+      tags:
+        - dinesh
+      notify: service restart
+
+  handlers:
+    - name: service restart
+      service: name=mysql state=restarted
+
