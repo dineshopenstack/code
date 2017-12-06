@@ -1,0 +1,21 @@
+---
+- hosts: all
+  tasks:
+    - name: install package
+      apt: name={{item}} state=present
+      with_items:
+        - rabbitmq-server
+      when: ansible_os_family == 'Debian'
+
+    - name: add user
+      rabbitmq_user:
+        user: openstack
+        password: openstack    
+        permissions: 
+          - vhost: /
+            configure_priv: .*
+            read_priv: .*
+            write_priv: .*
+        state: present
+      tags:
+        - dinesh
