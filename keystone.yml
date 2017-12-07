@@ -1,5 +1,5 @@
 ---
-- hosts: slave
+- hosts: controller
   tasks:
     
     - name: connect to database
@@ -9,6 +9,7 @@
         login_password: root
         name: keystone
         state: present
+
     - name: localhost keystone user
       mysql_user:
         login_host: localhost
@@ -18,6 +19,7 @@
         password: keystone
         priv: keystone.*:ALL 
         state: present
+
     - name: database remote user
       mysql_user:
         host: '%' 
@@ -28,6 +30,56 @@
         priv: keystone.*:ALL 
         state: present
 
+    - name: token
+      shell: openssl rand -hex 10 > /root/token
+      tags: dinesh
+
+    - name: keystone service
+      shell: echo "manual" > /etc/init/keystone.override
+      tags: sekhar
+
+    - name: install keystone package
+      apt: name={{item}} state=latest
+      with_items: 
+        - keystone
+        - apache2
+        - libapache2-mod-wsgi
+      tags: a
+
+    - name: keystone defaults
+      ini_file: dest=/etc/keystone/keystone.conf
+                section=DEFAULT
+                option=admin_token
+                value=50c49fe5d064b80f3952
+                backup=yes
+      tags: b
 
 
+    - name: keystone database
+      ini_file: dest=/etc/keystone/keystone.conf
+                section=database
+                option=connection
+                value=mysql://keystone:keystone@controller/keystone
+                backup=yes
+      tags: c
 
+    - name: token
+      ini_file: dest=/etc/keystone/keystone.conf
+                section=token
+                option=provider
+                value=fernet
+                backup=yes 
+      tags: d
+
+    - name: create database tables
+      shell: su -s /bin/sh -c "keystone-manage db_sync" keystone
+      tags: e
+
+    - name: initialize fernet keys
+      command: keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
+      tags: f
+
+    - name: apache2.conf
+      lineinfile: dest=/etc/apache2/apache2.conf
+                  line='ServerName controller'                
+      tags: g
