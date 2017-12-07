@@ -17,3 +17,7 @@
         upgrade=dist
         force=yes
       tags: sekhar
+
+    - name: install package
+      apt: name=python-openstackclient state=present
+      tags: narsi
