@@ -100,18 +100,12 @@
       shell: rm -f /var/lib/keystone/keystone.db
       tags: k
 
-    - name: replace admin token
-      shell: export OS_TOKEN=50c49fe5d064b80f3952
+    - name: copy export.sh 
+      copy: src=/etc/ansible/yml/export.sh
+            dest=/root/export.sh 
       tags: l
 
-    - name: end point url
-      shell: export OS_URL=http://controller:35357/v3
+    - name: replace admin token endpoint url 
+      command: bash export.sh 
       tags: m
 
-    - name: identity api
-      shell: export OS_IDENTITY_API_VERSION=3
-      tags: n
-
-#    - name: service entity of identity service
-#      shell: openstack service create --name keystone --description "OpenStack Identity" identity
-#      tags: o
