@@ -1,5 +1,5 @@
 ---
-- hosts: all
+- hosts: one
   tasks: 
     - name: install package
       apt: name=software-properties-common state=present
